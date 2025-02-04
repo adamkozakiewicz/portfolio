@@ -75,24 +75,25 @@ group by
 order by usertype, gender
 
 
+	
 with 
 month as(
       select distinct
-            extract(month from start_time) as trip_month
+            extract(month from start_time)	as trip_month
       from scooter-sharing44.trips.2019
 ),
 subscriber as(
       select 
-            count(trip_id)         as subscribers_trips
-            ,extract(month from start_time) as trip_month
+            count(trip_id)			as trips
+            ,extract(month from start_time) 	as trip_month
       from scooter-sharing44.trips.2019
       where usertype = 'Subscriber'
       group by trip_month
 ),
 customer as(
       select 
-            count(trip_id)         as customers_trips
-            ,extract(month from start_time) as trip_month
+            count(trip_id)         		as trips
+            ,extract(month from start_time) 	as trip_month
       from scooter-sharing44.trips.2019
       where usertype = 'Customer'
       group by trip_month
@@ -100,8 +101,8 @@ customer as(
 
 select
       month.trip_month
-      ,subscriber.subscribers_trips
-      ,customer.customers_trips
+      ,subscriber.trips
+      ,customer.trips
 from month
 left join subscriber on subscriber.trip_month = month.trip_month
 left join customer on customer.trip_month = month.trip_month
@@ -110,4 +111,49 @@ order by trip_month asc;
 
 
 
+with 
+hour as(
+      select distinct
+            extract(hour from start_time) as trip_hour
+      from scooter-sharing44.trips.2019
+),
+subscriber as(
+      select 
+            count(trip_id)         as subscribers_trips
+            ,extract(hour from start_time) as trip_hour
+      from scooter-sharing44.trips.2019
+      where usertype = 'Subscriber'
+      group by trip_hour
+),
+customer as(
+      select 
+            count(trip_id)         as customers_trips
+            ,extract(hour from start_time) as trip_hour
+      from scooter-sharing44.trips.2019
+      where usertype = 'Customer'
+      group by trip_hour
+)
+
+select
+      hour.trip_hour
+      ,subscriber.subscribers_trips
+      ,customer.customers_trips
+from hour
+left join subscriber on subscriber.trip_hour = hour.trip_hour
+left join customer on customer.trip_hour = hour.trip_hour
+order by trip_hour asc;
+
+
+
+select 
+      distinct percentile_cont(tripduration, 0.5) over()  as median
+      ,usertype
+from scooter-sharing44.trips.2019
+where usertype = 'Customer';
+
+select 
+      distinct percentile_cont(tripduration, 0.5) over()  as median
+      ,usertype
+from scooter-sharing44.trips.2019
+where usertype = 'Subscriber'
 
