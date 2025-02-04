@@ -45,5 +45,69 @@ group by
 order by trips_per_weekday desc;
 
 
+select 
+      avg(tripduration)     as avg_tripduration
+      ,usertype
+      ,day_of_week
+      ,gender
+
+from scooter-sharing44.trips.2019
+where gender is not null
+group by 
+      usertype
+      ,day_of_week
+      ,gender
+order by usertype, gender
+
+
+
+select 
+      avg(tripduration)             as avg_tripduration
+      ,round(avg(birthyear), 0)     as avg_birthyear
+      ,usertype
+      ,gender     
+
+from scooter-sharing44.trips.2019
+where gender is not null
+group by 
+      usertype
+      ,gender
+order by usertype, gender
+
+
+with 
+month as(
+      select distinct
+            extract(month from start_time) as trip_month
+      from scooter-sharing44.trips.2019
+),
+subscriber as(
+      select 
+            count(trip_id)         as subscribers_trips
+            ,extract(month from start_time) as trip_month
+      from scooter-sharing44.trips.2019
+      where usertype = 'Subscriber'
+      group by trip_month
+),
+customer as(
+      select 
+            count(trip_id)         as customers_trips
+            ,extract(month from start_time) as trip_month
+      from scooter-sharing44.trips.2019
+      where usertype = 'Customer'
+      group by trip_month
+)
+
+select
+      month.trip_month
+      ,subscriber.subscribers_trips
+      ,customer.customers_trips
+from month
+left join subscriber on subscriber.trip_month = month.trip_month
+left join customer on customer.trip_month = month.trip_month
+order by trip_month asc;
+
+
+
 
 
