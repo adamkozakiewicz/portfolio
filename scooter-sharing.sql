@@ -47,7 +47,7 @@ from scooter-sharing44.trips.2019;
 
 
 /* Data exploration: checking length of trip id. */
-select length('trip_id') as trip_length
+select length('trip_id') 		as trip_length
 from scooter-sharing44.trips.2019
 group by trip_length
 
@@ -101,24 +101,21 @@ with
 month as(
       select distinct
             extract(month from start_time)	as trip_month
-      from scooter-sharing44.trips.2019
-),
+      from scooter-sharing44.trips.2019),
 subscriber as(
       select 
             count(trip_id)			as trips
             ,extract(month from start_time) 	as trip_month
       from scooter-sharing44.trips.2019
       where usertype = 'Subscriber'
-      group by trip_month
-),
+      group by trip_month),
 customer as(
       select 
             count(trip_id)         		as trips
             ,extract(month from start_time) 	as trip_month
       from scooter-sharing44.trips.2019
       where usertype = 'Customer'
-      group by trip_month
-)
+      group by trip_month)
 select
       month.trip_month
       ,subscriber.trips
@@ -134,24 +131,21 @@ with
 hour as(
       select distinct
             extract(hour from start_time) as trip_hour
-      from scooter-sharing44.trips.2019
-),
+      from scooter-sharing44.trips.2019),
 subscriber as(
       select 
-            count(trip_id)         as subscribers_trips
-            ,extract(hour from start_time) as trip_hour
+            count(trip_id)         		as subscribers_trips
+            ,extract(hour from start_time) 	as trip_hour
       from scooter-sharing44.trips.2019
       where usertype = 'Subscriber'
-      group by trip_hour
-),
+      group by trip_hour),
 customer as(
       select 
-            count(trip_id)         as customers_trips
-            ,extract(hour from start_time) as trip_hour
+            count(trip_id)         		as customers_trips
+            ,extract(hour from start_time) 	as trip_hour
       from scooter-sharing44.trips.2019
       where usertype = 'Customer'
-      group by trip_hour
-)
+      group by trip_hour)
 select
       hour.trip_hour
       ,subscriber.subscribers_trips
@@ -174,4 +168,31 @@ select
       ,usertype
 from scooter-sharing44.trips.2019
 where usertype = 'Subscriber';
+
+
+/* Analyzing top 10 start stations nased on usertype */
+select *
+from(
+      select
+            from_station_name
+            ,count(from_station_name)                 as from_total
+            ,countif(usertype = 'Customer')         as from_customer
+            ,rank() over(order by countif(usertype = 'Customer') desc)  as ranking
+      from scooter-sharing44.trips.2019
+      group by from_station_name
+      order by from_customer desc)
+where ranking <= 10; 	/* or limit 10, I knooow */
+
+
+select *
+from(
+      select
+            from_station_name
+            ,count(from_station_name)                 as from_total
+            ,countif(usertype = 'Subscriber')         as from_subscriber
+            ,rank() over(order by countif(usertype = 'Subscriber') desc)  as ranking
+      from scooter-sharing44.trips.2019
+      group by from_station_name
+      order by from_subscriber desc)
+where ranking <= 10; 	/* or limit 10, I knooow */
 
