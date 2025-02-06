@@ -1,5 +1,5 @@
 /* 
-Scooter-share program offers flexible pricing: single-ride passes, full-day passes, and annual memberships. 
+Scooter-share program in Chicago offers flexible pricing: single-ride passes, full-day passes, and annual memberships. 
 Casual riders (single-ride and full-day users) are less profitable than annual members. To drive growth, company aims 
 to convert casual riders into members. Marketing efforts will focus on understanding the differences between these groups, 
 identifying reasons for membership purchases, and leveraging digital media. I will analyze historical trip data to 
@@ -9,22 +9,18 @@ I need to answer the question: How do annual members and casual riders use scoot
 
 
 /* Data preparation: creating a new table with all rides from 2019. */
-
-create table scooter-sharing44.trips.2019 as
-    (
+create table scooter-sharing44.trips.2019 as(
 	select * from scooter-sharing44.trips.q1
-    union all
-    select * from scooter-sharing44.trips.q2
-    union all
-    select * from scooter-sharing44.trips.q3
-    union all
-    select * from scooter-sharing44.trips.q4
-    );
+	union all
+	select * from scooter-sharing44.trips.q2
+	union all
+	select * from scooter-sharing44.trips.q3
+	union all
+	select * from scooter-sharing44.trips.q4
+);
 
 
-
-/* Data preparation: creating a new column for the weekday of the ride's start */
-
+/* Data preparation: creating a new column for the weekday of the ride's start. */
 alter table scooter-sharing44.trips.2019 add column day_of_week string;
 
 update scooter-sharing44.trips.2019 
@@ -32,25 +28,51 @@ set day_of_week = format_date('%a', start_time)
 where true;
 
 
-/* Analyzing the number of rides taken on different weekdays based on user type (subscriber or customer) */
+/* Data exploration: checking the number of null values in each column */
+select
+      countif(trip_id is null) as null_trip_id
+      ,countif(start_time is null) as null_start_time
+      ,countif(end_time is null) as null_end_time
+      ,countif(bikeid is null) as null_bikeid
+      ,countif(tripduration is null) as null_tripduration
+      ,countif(from_station_id is null) as null_from_station_id
+      ,countif(from_station_name is null) as null_from_station_name
+      ,countif(to_station_id is null) as null_to_station_id
+      ,countif(to_station_name is null) as null_to_station_name
+      ,countif(usertype is null) as null_usertype
+      ,countif(gender is null) as null_gender
+      ,countif(birthyear is null) as null_birthyear
+      ,countif(day_of_week is null) as null_day_of_week
+from scooter-sharing44.trips.2019;
 
+
+/* Data exploration: checking length of trip id. */
+select length('trip_id') as trip_length
+from scooter-sharing44.trips.2019
+group by trip_length
+
+
+/* Analyzing the number of rides taken on different weekdays based on user type (subscriber or customer) and gender. */
 select 
       count(day_of_week)      as trips_per_weekday
       ,day_of_week
       ,usertype
+      ,gender
 from scooter-sharing44.trips.2019
+where gender is not null
 group by 
       day_of_week
       ,usertype
+      ,gender
 order by trips_per_weekday desc;
 
 
+/* Analyzing the average trip duration on diffrent weekdays based on user type and gender. */
 select 
-      avg(tripduration)     as avg_tripduration
+      avg(tripduration)/60	as avg_tripduration      /* in minutes */
       ,usertype
       ,day_of_week
       ,gender
-
 from scooter-sharing44.trips.2019
 where gender is not null
 group by 
@@ -60,13 +82,12 @@ group by
 order by usertype, gender
 
 
-
+/* Analyzing the average trip duration and the average user year of birth based on user type and gender. */
 select 
-      avg(tripduration)             as avg_tripduration
+      avg(tripduration)/60          as avg_tripduration      /* in minutes */
       ,round(avg(birthyear), 0)     as avg_birthyear
       ,usertype
       ,gender     
-
 from scooter-sharing44.trips.2019
 where gender is not null
 group by 
@@ -75,7 +96,7 @@ group by
 order by usertype, gender
 
 
-	
+/* Analyzing the number of rides per month based on user type. */	
 with 
 month as(
       select distinct
@@ -98,7 +119,6 @@ customer as(
       where usertype = 'Customer'
       group by trip_month
 )
-
 select
       month.trip_month
       ,subscriber.trips
@@ -109,8 +129,7 @@ left join customer on customer.trip_month = month.trip_month
 order by trip_month asc;
 
 
-
-
+/* Analyzing the number of rides per hour based on user type. */
 with 
 hour as(
       select distinct
@@ -133,7 +152,6 @@ customer as(
       where usertype = 'Customer'
       group by trip_hour
 )
-
 select
       hour.trip_hour
       ,subscriber.subscribers_trips
@@ -144,7 +162,7 @@ left join customer on customer.trip_hour = hour.trip_hour
 order by trip_hour asc;
 
 
-
+/* Analyzing the median trip duration based on user type */
 select 
       distinct percentile_cont(tripduration, 0.5) over()  as median
       ,usertype
@@ -155,5 +173,5 @@ select
       distinct percentile_cont(tripduration, 0.5) over()  as median
       ,usertype
 from scooter-sharing44.trips.2019
-where usertype = 'Subscriber'
+where usertype = 'Subscriber';
 
