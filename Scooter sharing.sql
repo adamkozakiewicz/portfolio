@@ -5,6 +5,8 @@ to convert casual riders into members. Marketing efforts will focus on understan
 identifying reasons for membership purchases, and leveraging digital media. I will analyze historical trip data to 
 uncover trends and inform their strategy. 
 I need to answer the question: How do annual members and casual riders use scooters differently?
+
+Skills used: Joins, CTE's, Subqueries, Window Functions, Aggregate Functions, Creating Tables
 */
 
 
@@ -170,27 +172,27 @@ from scooter-sharing44.trips.2019
 where usertype = 'Subscriber';
 
 
-/* Analyzing top 10 start stations nased on usertype */
+/* Analyzing top 10 start stations based on usertype */
 select *
 from(
       select
             from_station_name
-            ,count(from_station_name)                 as from_total
-            ,countif(usertype = 'Customer')         as from_customer
+            ,count(from_station_name)                 			as from_total
+            ,countif(usertype = 'Customer')         			as from_customer
             ,rank() over(order by countif(usertype = 'Customer') desc)  as ranking
       from scooter-sharing44.trips.2019
       group by from_station_name
       order by from_customer desc)
-where ranking <= 10; 	/* or limit 10, I knooow */
+where ranking <= 10; 	/* or limit 10, I knooow, but there is small difference */
 
 
 select *
 from(
       select
             from_station_name
-            ,count(from_station_name)                 as from_total
-            ,countif(usertype = 'Subscriber')         as from_subscriber
-            ,rank() over(order by countif(usertype = 'Subscriber') desc)  as ranking
+            ,count(from_station_name)                			 as from_total
+            ,countif(usertype = 'Subscriber')				 as from_subscriber
+            ,rank() over(order by countif(usertype = 'Subscriber') desc) as ranking
       from scooter-sharing44.trips.2019
       group by from_station_name
       order by from_subscriber desc)
