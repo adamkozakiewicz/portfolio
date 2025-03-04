@@ -6,7 +6,7 @@ identifying reasons for membership purchases, and leveraging digital media. I wi
 uncover trends and inform their strategy. 
 I need to answer the question: How do annual members and casual riders use scooters differently?
 
-Skills used: Joins, CTE's, Subqueries, Window Functions, Aggregate Functions, Creating Tables
+Skills used: Joins, CTE's, Subqueries, Window Functions, Aggregate Functions, Creating Tables and Columns.
 */
 
 
